@@ -1,0 +1,148 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
+
+public class puzzle_8_idsearch {
+
+    private static final int SIZE = 3;
+    private static final int[][] GOAL_STATE = {{2, 8, 1}, {0, 4, 3}, {7, 6, 5}};
+
+    public static void main(String[] args) {
+        int[][] initialBoard = {
+                {1, 2, 3}, {8, 0, 4}, {7, 6, 5}
+        };
+
+
+
+        long start = System.currentTimeMillis();
+        iterativeDeepening(initialBoard);
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println(timeElapsed + " timetaken");
+
+    }
+
+    private static void iterativeDeepening(int[][] initialBoard) {
+        int maxDepth = 31; // Maximum depth for an 8-puzzle is 31
+
+        for (int depth = 0; depth <= maxDepth; depth++) {
+            if (depthLimitedSearch(initialBoard, depth)) {
+                System.out.println("Solution found at depth " + depth);
+                return;
+            }
+        }
+
+        System.out.println("No solution found within the maximum depth.");
+    }
+
+    private static boolean depthLimitedSearch(int[][] initialBoard, int depth) {
+        Stack<Node> stack = new Stack<>();
+        stack.push(new Node(initialBoard, null, 0));
+
+        while (!stack.isEmpty()) {
+            Node currentNode = stack.pop();
+
+            if (Arrays.deepEquals(currentNode.board, GOAL_STATE)) {
+                printSolution(currentNode);
+                return true;
+            }
+
+            if (currentNode.depth < depth) {
+                for (Node child : currentNode.generateChildren(currentNode)) {
+                    stack.push(child);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void printSolution(Node node) {
+        Stack<Node> path = new Stack<>();
+
+        while (node != null) {
+            path.push(node);
+            node = node.parent;
+        }
+
+        while (!path.isEmpty()) {
+            Node current = path.pop();
+            printBoard(current.board);
+            System.out.println();
+        }
+    }
+
+    private static void printBoard(int[][] board) {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    private static class Node {
+        private int[][] board;
+        private Node parent;
+        private int depth;
+
+        public Node(int[][] board, Node parent, int depth) {
+            this.board = board;
+            this.parent = parent;
+            this.depth = depth;
+        }
+
+        public Iterable<Node> generateChildren(Node node) {
+            // Implement the logic to generate possible child nodes here
+            // Ensure to move the empty tile in legal directions (up, down, left, right)
+            // Check for boundaries to avoid illegal moves
+            // Create new nodes with the updated board configuration
+            // Return the list of valid child nodes
+            // Note: Be careful not to modify the current node's board directly
+
+            // Example (you need to implement this method):
+            // List<Node> children = new ArrayList<>();
+            // ... generate child nodes ...
+            // return children;
+
+            List<puzzle_8_idsearch.Node> results = new ArrayList<>();
+            int[][] state = node.board;
+            int row = state.length;
+            int col = state[0].length;
+
+            int zeroRow = -1;
+            int zeroCol = -1;
+
+            // Find the position of the zero (empty) tile
+            for (int i = 0; i < row; i++) {
+                for (int j = 0; j < col; j++) {
+                    if (state[i][j] == 0) {
+                        zeroRow = i;
+                        zeroCol = j;
+                        break;
+                    }
+                }
+            }
+
+            for (int[] direction : new int[][]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}}) {
+                int newRow = zeroRow + direction[0];
+                int newCol = zeroCol + direction[1];
+
+                if (newRow >= 0 && newRow < row && newCol >= 0 && newCol < col) {
+                    int[][] newState = new int[row][col];
+                    for (int i = 0; i < row; i++) {
+                        newState[i] = Arrays.copyOf(state[i], col);
+                    }
+                    // Swap the empty tile with the neighboring tile
+                    newState[zeroRow][zeroCol] = newState[newRow][newCol];
+                    newState[newRow][newCol] = 0;
+                    results.add(new puzzle_8_idsearch.Node(newState, node, node.depth+1));
+                }
+            }
+            return results;
+
+        }
+    }
+}
+
