@@ -1,0 +1,101 @@
+import java.util.*;
+class State {
+    int x, y; 
+    State parent; // To store the parent state
+
+    State(int x, int y, State parent) {
+        this.x = x;
+        this.y = y;
+        this.parent = parent;
+    }
+}
+
+public class water_jug {
+    // Function to check if (x, y) is valid or not
+    static boolean isValid(int x, int y, int m, int n) {
+        return (x >= 0 && y >= 0 && x <= m && y <= n);
+    }
+
+    // BFS function to find the minimum number of operations
+    // needed to measure 'd' gallons of water using jugs of
+    // size 'm' and 'n'
+    static void BFS(int m, int n, int d) {
+        boolean[][] visited = new boolean[m + 1][n + 1];
+
+        Queue<State> q = new LinkedList<>();
+
+        State initialState = new State(0, 0, null);
+
+        q.add(initialState);
+
+        while (!q.isEmpty()) {
+            State u = q.poll();
+
+            if (visited[u.x][u.y]) continue;
+
+            visited[u.x][u.y] = true;
+
+            // If d gallons of water is reached, print the path
+            if (u.x == d || u.y == d || u.x + u.y == d) {
+                Stack<State> path = new Stack<>();
+                while (u != null) {
+                    path.push(u);
+                    u = u.parent;
+                }
+                while (!path.isEmpty()) {
+                    State state = path.pop();
+                    System.out.println("(" + state.x + ", " + state.y + ")");
+                }
+                return;
+            }
+
+            // Empty the first jug
+            if (u.x > 0) {
+                q.add(new State(0, u.y, u));
+            }
+
+            // Empty the second jug
+            if (u.y > 0) {
+                q.add(new State(u.x, 0, u));
+            }
+
+            // Fill the first jug
+            if (u.x < m) {
+                q.add(new State(m, u.y, u));
+            }
+
+            // Fill the second jug
+            if (u.y < n) {
+                q.add(new State(u.x, n, u));
+            }
+
+            // Pour water from the first jug to the second jug
+            int pour = Math.min(u.x, n - u.y);
+            if (pour > 0) {
+                q.add(new State(u.x - pour, u.y + pour, u));
+            }
+
+            // Pour water from the second jug to the first jug
+            pour = Math.min(m - u.x, u.y);
+            if (pour > 0) {
+                q.add(new State(u.x + pour, u.y - pour, u));
+            }
+        }
+
+        // No solution found
+        System.out.println("No solution found");
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter m : ");
+        int m = sc.nextInt();
+        System.out.print("Enter n : ");
+        int n = sc.nextInt();
+        System.out.print("Enter d : ");
+        int d = sc.nextInt();
+        System.out.println("Jug sizes: " + m + " and " + n + ", Target: " + d);
+        System.out.println("Steps to measure " + d + " gallons of water:");
+        BFS(m,n,d);
+    }
+}
