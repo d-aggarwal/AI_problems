@@ -1,0 +1,135 @@
+import java.util.*;
+
+public class puzzle_8_bfs {
+
+    static class Node {
+        int[][] state;
+        Node parent;
+        String action;
+
+        public Node(int[][] state, Node parent, String action) {
+            this.state = state;
+            this.parent = parent;
+            this.action = action;
+        }
+    }
+
+    static class Puzzle {
+        final int[][] goalState;
+        final int[][] startState;
+        Node solution;
+        int numExplored;
+
+        public Puzzle(int[][] startState, int[][] goalState) {
+            this.startState = startState;
+            this.goalState = goalState;
+        }
+
+        public List<Node> neighbors(Node node) {
+            List<Node> results = new ArrayList<>();
+            int[][] state = node.state;
+            int row = state.length;
+            int col = state[0].length;
+
+            int zeroRow = -1;
+            int zeroCol = -1;
+
+            // Find the position of the zero (empty) tile
+            for (int i = 0; i < row; i++) {
+                for (int j = 0; j < col; j++) {
+                    if (state[i][j] == 0) {
+                        zeroRow = i;
+                        zeroCol = j;
+                        break;
+                    }
+                }
+            }
+
+            for (int[] direction : new int[][]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}}) {
+                int newRow = zeroRow + direction[0];
+                int newCol = zeroCol + direction[1];
+
+                if (newRow >= 0 && newRow < row && newCol >= 0 && newCol < col) {
+                    int[][] newState = new int[row][col];
+                    for (int i = 0; i < row; i++) {
+                        newState[i] = Arrays.copyOf(state[i], col);
+                    }
+                    // Swap the empty tile with the neighboring tile
+                    newState[zeroRow][zeroCol] = newState[newRow][newCol];
+                    newState[newRow][newCol] = 0;
+                    results.add(new Node(newState, node, ""));
+                }
+            }
+            return results;
+        }
+
+        public void solve() {
+            numExplored = 0;
+            Node startNode = new Node(startState, null, null);
+            Queue<Node> frontier = new LinkedList<>();
+            frontier.add(startNode);
+            Set<String> explored = new HashSet<>();
+
+            while (!frontier.isEmpty()) {
+                Node node = frontier.poll();
+                numExplored++;
+
+                if (Arrays.deepEquals(node.state, goalState)) {
+                    solution = node;
+                    return;
+                }
+
+                explored.add(Arrays.deepToString(node.state));
+
+                for (Node neighbor : neighbors(node)) {
+                    String neighborStateStr = Arrays.deepToString(neighbor.state);
+                    if (!explored.contains(neighborStateStr)) {
+                        frontier.add(neighbor);
+                        explored.add(neighborStateStr);
+                    }
+                }
+            }
+            throw new RuntimeException("No solution");
+        }
+
+        public void printSolution() {
+            if (solution == null) {
+                System.out.println("No solution found.");
+                return;
+            }
+
+            List<int[][]> states = new ArrayList<>();
+            Node node = solution;
+            while (node != null) {
+                states.add(node.state);
+                node = node.parent;
+            }
+            Collections.reverse(states);
+
+            for (int[][] state : states) {
+                for (int[] row : state) {
+                    System.out.println(Arrays.toString(row));
+                }
+                System.out.println();
+            }
+            System.out.println("Goal Reached!!");
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] startState = {{1, 2, 3}, {8, 0, 4}, {7, 6, 5}};
+        int[][] goalState = {{2, 8, 1}, {0, 4, 3}, {7, 6, 5}};
+
+
+        long start = System.currentTimeMillis();
+        Puzzle p = new Puzzle(startState, goalState);
+
+        p.solve();
+        p.printSolution();
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println(timeElapsed + " timetaken");
+
+
+    }
+}
