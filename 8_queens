@@ -1,0 +1,47 @@
+import java.util.*;
+
+public class eight_queens {
+
+    public static boolean issafe(boolean [][]chessboard,int row,int col){
+
+        for(int i = row-1,j=col-1;j>=0&&i>=0;i--,j--){
+            if(chessboard[i][j]==true) return false;
+
+        }
+
+        for(int i = row-1;i>=0;i--){
+            if(chessboard[i][col]==true) return false;
+        }
+
+        for(int i = row-1,j=col+1;j<chessboard.length&&i>=0;i--,j++){
+            if(chessboard[i][j]==true) return false;
+
+        }
+        return true;
+
+    }
+
+    public static void  nqueens(boolean [][]chessboard,int row,String ans){
+        if(row == chessboard.length){
+            ans = ans+".";
+            System.out.println(ans);
+            return;
+        }
+
+        for(int col =0;col<chessboard.length;col++){
+            if(issafe(chessboard,row,col)==true){
+                chessboard[row][col] = true;
+                nqueens(chessboard,row+1,ans+row+"-"+col+", ");
+                chessboard[row][col] = false;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        /* Enter your code here. Read input from STDIN. Print output to STDOUT. Your class should be named Solution. */
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        boolean chessboard [][]= new boolean [n][n];
+        nqueens(chessboard,0,"");
+    }
+}
